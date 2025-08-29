@@ -119,7 +119,7 @@ const projects = [
     title: "St. John the Apostle Chapel Information System",
     description:
       "Full-stack organizational information system with event scheduling, asset borrowing, and intelligent document management.",
-    image: "../public/images/project-sinyora.png",
+    image: "/images/project-sinyora.png",
     technologies: ["Laravel", "Livewire", "Tailwind CSS", "MySQL"],
     category: "Web",
     demoUrl: "https://sinyora.my.id/",
@@ -129,7 +129,7 @@ const projects = [
     title: "Document Processing API",
     description:
       "Intelligent API for automated document processing, capable of performing OCR, document classification, named entity recognition (NER), and extracting structured information from various document types.",
-    image: "../public/images/project-ai-sinyora.png",
+    image: "/images/project-ai-sinyora.png",
     technologies: [
       "Python",
       "Flask",
