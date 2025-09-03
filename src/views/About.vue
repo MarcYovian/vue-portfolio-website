@@ -1,7 +1,6 @@
 <template>
   <div class="about">
     <div class="container">
-      <!-- Introduction Section -->
       <section class="intro-section fade-in-up">
         <h1>About Me</h1>
         <div class="intro-content">
@@ -27,7 +26,6 @@
               new.
             </p>
           </div>
-
           <div class="intro-stats">
             <div class="stat-card card">
               <h3>1+</h3>
@@ -45,132 +43,142 @@
         </div>
       </section>
 
-      <!-- Career Timeline -->
-      <section class="career-section">
-        <h2>Professional Experience</h2>
-        <div class="timeline">
-          <div
-            v-for="(experience, index) in experiences"
-            :key="index"
-            class="timeline-item"
-          >
-            <div class="timeline-marker">
-              <div class="timeline-dot"></div>
-            </div>
+      <div v-if="isLoading">
+        <section class="career-section">
+          <div class="skeleton skeleton-title"></div>
+          <div class="timeline" style="max-width: 800px; margin: 0 auto">
+            <div
+              v-for="n in 2"
+              :key="n"
+              class="skeleton skeleton-timeline-item"
+            ></div>
+          </div>
+        </section>
+        <section class="education-section">
+          <div class="skeleton skeleton-title"></div>
+          <div class="education-grid grid grid-2">
+            <div v-for="n in 2" :key="n" class="skeleton skeleton-card"></div>
+          </div>
+        </section>
+      </div>
 
-            <div class="timeline-content card">
-              <div class="timeline-header">
-                <h3>{{ experience.role }}</h3>
-                <span class="company">{{ experience.company }}</span>
-                <span class="duration">{{ experience.duration }}</span>
+      <section v-else-if="error" class="error-state">
+        <GraduationCap :size="48" class="error-icon" />
+        <h3>Oops, Terjadi Kesalahan</h3>
+        <p>{{ error }}</p>
+        <button @click="fetchAllData" class="btn btn-primary">Coba Lagi</button>
+      </section>
+
+      <div v-else>
+        <section v-if="experiences.length > 0" class="career-section">
+          <h2>Professional Experience</h2>
+          <div class="timeline">
+            <div
+              v-for="(experience, index) in experiences"
+              :key="index"
+              class="timeline-item"
+            >
+              <div class="timeline-marker">
+                <div class="timeline-dot"></div>
               </div>
-
-              <p class="description">{{ experience.description }}</p>
-
-              <ul class="achievements">
-                <li
-                  v-for="achievement in experience.achievements"
-                  :key="achievement"
-                >
-                  <Check :size="16" />
-                  {{ achievement }}
-                </li>
-              </ul>
-
-              <div class="technologies">
-                <span
-                  v-for="tech in experience.technologies"
-                  :key="tech"
-                  class="tech-tag"
-                >
-                  {{ tech }}
-                </span>
+              <div class="timeline-content card">
+                <div class="timeline-header">
+                  <h3>{{ experience.role }}</h3>
+                  <span class="company">{{ experience.company }}</span>
+                  <span class="period">{{ experience.period }}</span>
+                </div>
+                <p class="description">{{ experience.description }}</p>
+                <ul class="achievements">
+                  <li
+                    v-for="achievement in experience.achievements"
+                    :key="achievement"
+                  >
+                    <Check :size="16" /> {{ achievement }}
+                  </li>
+                </ul>
+                <div class="skills">
+                  <span
+                    v-for="tech in experience.skills"
+                    :key="tech"
+                    class="tech-tag"
+                    >{{ tech }}</span
+                  >
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- Education Section -->
-      <section class="education-section">
-        <h2>Education</h2>
-        <div class="education-grid grid grid-2">
-          <div
-            v-for="education in educationList"
-            :key="education.degree"
-            class="education-card card"
-          >
-            <div class="education-icon">
-              <GraduationCap :size="32" />
-            </div>
-
-            <div class="education-content">
-              <h3>{{ education.degree }}</h3>
-              <p class="institution">{{ education.institution }}</p>
-              <p class="year">{{ education.year }}</p>
-              <p v-if="education.gpa" class="gpa">GPA: {{ education.gpa }}</p>
-              <p v-if="education.description" class="description">
-                {{ education.description }}
-              </p>
+        <section v-if="educations.length > 0" class="education-section">
+          <h2>Education</h2>
+          <div class="education-grid grid grid-2">
+            <div
+              v-for="education in educations"
+              :key="education.degree"
+              class="education-card card"
+            >
+              <div class="education-icon"><GraduationCap :size="32" /></div>
+              <div class="education-content">
+                <h3>{{ education.degree }}</h3>
+                <p class="institution">{{ education.institution }}</p>
+                <p class="year">{{ education.period }}</p>
+                <p v-if="education.gpa" class="gpa">
+                  GPA: {{ education.gpa }}/{{ education.max_gpa }}
+                </p>
+                <p v-if="education.description" class="description">
+                  {{ education.description }}
+                </p>
+              </div>
             </div>
           </div>
+        </section>
+
+        <div
+          v-if="experiences.length === 0 && educations.length === 0"
+          class="empty-state"
+        >
+          <p>Informasi pengalaman dan edukasi saat ini tidak tersedia.</p>
         </div>
-      </section>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import axios from "axios";
 import { Check, GraduationCap } from "lucide-vue-next";
+import { onMounted, ref } from "vue";
 
-const experiences = [
-  {
-    role: "Web Developer (Internship)",
-    company: "PT Perkebunan Nusantara I Region V",
-    duration: "July 2024 - December 2024",
-    description:
-      "Contributed to the development, maintenance, and modernization of several key internal web applications for operational efficiency, including systems for KPI monitoring, payment processing (Superman), and project management (SLA Dashboard).",
-    achievements: [
-      "Successfully led the migration of three core internal applications (Superman, E-Sign, Akomodasi Regional) from legacy frameworks like Laravel 6 & CodeIgniter 3 to modern Laravel 10, enhancing system performance, security, and maintainability.",
-      "Engineered and deployed multiple APIs to integrate key business systems with third-party platforms like Looker for data analytics and BSSN for digital signatures, as well as enabling real-time mobile notifications via Firebase.",
-      "Developed and optimized critical features across various projects, including dynamic monitoring dashboards with Chart.js, server-side data processing to handle large datasets efficiently, and implemented the Service Repository Pattern to improve code structure.",
-    ],
-    technologies: [
-      "PHP",
-      "Laravel (8, 10)",
-      "CodeIgniter 3",
-      "JavaScript",
-      "jQuery",
-      "Chart.js",
-      "Firebase",
-      "Git",
-    ],
-  },
-  {
-    role: "Practical Assistant (Multiple Courses)",
-    company: "Telkom University Surabaya",
-    duration: "September 2022 - July 2024",
-    description:
-      "Provided academic mentorship and support to undergraduate students across several core computer science courses, including Framework Programming, Object-Oriented Programming, and Algorithms & Data Structures.",
-    achievements: [
-      "Mentored and provided intensive assistance to over 100 students in Information Systems and Information Technology programs.",
-      "Developed and designed practical teaching modules for courses such as Algorithms & Data Structures and Basic Algorithms & Programming.",
-      "Evaluated student assignments and major projects to ensure correct application of programming principles in Laravel, Java, and C++.",
-    ],
-    technologies: ["Laravel", "Java", "C++", "C"],
-  },
-];
+const experiences = ref([]);
+const educations = ref([]);
 
-const educationList = [
-  {
-    degree: "Bachelor's Degree in Information Technology",
-    institution: "Telkom University Surabaya",
-    year: "September 2021 - August 2024",
-    gpa: "3.87/4.0",
-    description:
-      "Relevant coursework includes Mobile Programming, Databases, and Algorithms & Data Structures. Actively participated in various events, including the Innovillage Competition 2023 and the Telkom University Open House.",
-  },
-];
+const isLoading = ref(true);
+const error = ref(null);
+
+const fetchAllData = async () => {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const [experiencesResponse, educationsResponse] = await Promise.all([
+      axios.get("https://panel.marcyovian.my.id/api/experiences"),
+      axios.get("https://panel.marcyovian.my.id/api/educations"),
+    ]);
+
+    experiences.value = experiencesResponse.data.data;
+    educations.value = educationsResponse.data.data;
+  } catch (err) {
+    console.log("Error fetching data:", err);
+    error.value =
+      "Sorry, something went wrong while fetching data. Please try again later.";
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(async () => {
+  fetchAllData();
+});
 </script>
 
 <style scoped>
@@ -293,7 +301,7 @@ const educationList = [
   margin-right: 1rem;
 }
 
-.duration {
+.period {
   color: var(--text-secondary);
   font-size: 0.9rem;
 }
@@ -321,7 +329,7 @@ const educationList = [
   flex-shrink: 0;
 }
 
-.technologies {
+.skills {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -380,6 +388,61 @@ const educationList = [
   color: var(--text-secondary);
   font-size: 0.9rem;
   margin-top: 0.5rem;
+}
+
+.error-state,
+.empty-state {
+  text-align: center;
+  padding: 4rem 0;
+}
+.error-icon {
+  color: var(--accent);
+  margin: 0 auto 1.5rem;
+}
+.error-state h3 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+.error-state p,
+.empty-state p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+.error-state .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Gaya untuk Skeleton Loader */
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton {
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.skeleton-title {
+  height: 32px;
+  width: 280px;
+  margin: 0 auto 3rem;
+}
+
+.skeleton-timeline-item {
+  height: 250px;
+  width: 100%;
+  border-radius: 16px;
+  margin-bottom: 3rem;
+}
+
+.skeleton-card {
+  height: 180px;
+  border-radius: 16px;
 }
 
 @media (max-width: 768px) {
