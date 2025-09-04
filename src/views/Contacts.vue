@@ -10,7 +10,6 @@
       </header>
 
       <div class="contacts-content">
-        <!-- Contact Information -->
         <div class="contact-info">
           <div class="info-card card">
             <div class="info-header">
@@ -38,26 +37,20 @@
                 href="https://github.com/MarcYovian/"
                 target="_blank"
                 class="social-link"
+                ><Github :size="24" /><span>GitHub</span></a
               >
-                <Github :size="24" />
-                <span>GitHub</span>
-              </a>
               <a
                 href="https://linkedin.com/in/marcellinus-yovian-indrastata"
                 target="_blank"
                 class="social-link"
+                ><Linkedin :size="24" /><span>LinkedIn</span></a
               >
-                <Linkedin :size="24" />
-                <span>LinkedIn</span>
-              </a>
               <a
                 href="https://instagram.com/marcyovian/"
                 target="_blank"
                 class="social-link"
+                ><Instagram :size="24" /><span>Instagram</span></a
               >
-                <Instagram :size="24" />
-                <span>Instagram</span>
-              </a>
             </div>
           </div>
 
@@ -71,12 +64,10 @@
           </div>
         </div>
 
-        <!-- Contact Form -->
         <div class="contact-form">
           <div class="form-card card">
             <h3>Send a Message</h3>
             <p>Have a project in mind? Let's discuss it!</p>
-
             <form @submit.prevent="submitForm" class="form">
               <div class="form-group">
                 <label for="name">Name *</label>
@@ -89,7 +80,6 @@
                   placeholder="Your full name"
                 />
               </div>
-
               <div class="form-group">
                 <label for="email">Email *</label>
                 <input
@@ -101,7 +91,6 @@
                   placeholder="your.email@example.com"
                 />
               </div>
-
               <div class="form-group">
                 <label for="subject">Subject *</label>
                 <input
@@ -113,7 +102,6 @@
                   placeholder="Project inquiry, collaboration, etc."
                 />
               </div>
-
               <div class="form-group">
                 <label for="message">Message *</label>
                 <textarea
@@ -125,7 +113,6 @@
                   placeholder="Tell me about your project or idea..."
                 ></textarea>
               </div>
-
               <button
                 type="submit"
                 class="btn btn-primary form-submit"
@@ -135,6 +122,19 @@
                 <div v-else class="spinner"></div>
                 {{ isSubmitting ? "Sending..." : "Send Message" }}
               </button>
+
+              <div
+                v-if="submissionMessage"
+                class="form-feedback"
+                :class="{
+                  success: submissionStatus === 'success',
+                  error: submissionStatus === 'error',
+                }"
+              >
+                <Check v-if="submissionStatus === 'success'" :size="20" />
+                <XCircle v-if="submissionStatus === 'error'" :size="20" />
+                <p>{{ submissionMessage }}</p>
+              </div>
             </form>
           </div>
         </div>
@@ -144,6 +144,7 @@
 </template>
 
 <script setup lang="ts">
+import axios from "axios";
 import {
   Check,
   Copy,
@@ -159,7 +160,10 @@ import { reactive, ref } from "vue";
 
 const copied = ref(false);
 const copyMessage = ref("Copy to clipboard");
+
 const isSubmitting = ref(false);
+const submissionStatus = ref(""); // 'success', 'error', atau ''
+const submissionMessage = ref("");
 
 const form = reactive({
   name: "",
@@ -185,19 +189,36 @@ const copyEmail = async () => {
 
 const submitForm = async () => {
   isSubmitting.value = true;
+  submissionStatus.value = "";
+  submissionMessage.value = "";
 
-  // Simulate form submission
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  try {
+    await axios.post("https://panel.marcyovian.my.id/api/messages", form);
 
-  // Reset form
-  Object.keys(form).forEach((key) => {
-    (form as any)[key] = "";
-  });
+    submissionStatus.value = "success";
+    submissionMessage.value =
+      "Message sent successfully! I'll get back to you soon.";
 
-  isSubmitting.value = false;
-
-  // Show success message (you could use a toast notification here)
-  alert("Message sent successfully! I'll get back to you soon.");
+    Object.assign(form, {
+      name: "",
+      email: "",
+      subject: "",
+      message: "",
+    });
+  } catch (error) {
+    submissionStatus.value = "error";
+    if (axios.isAxiosError(error) && error.response) {
+      submissionMessage.value =
+        error.response.data.message ||
+        "Failed to send message. Please try again later.";
+    } else {
+      submissionMessage.value =
+        "Failed to send message. Please try again later.";
+    }
+    console.error("Error submitting form:", error);
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 </script>
 
@@ -399,6 +420,33 @@ const submitForm = async () => {
   border-top: 2px solid currentColor;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+.email {
+  word-break: break-all;
+}
+.form-feedback {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-weight: 500;
+}
+.form-feedback.success {
+  background-color: rgba(4, 120, 87, 0.1);
+  color: #065f46;
+  border: 1px solid #064e3b;
+}
+.form-feedback.error {
+  background-color: rgba(185, 28, 28, 0.1);
+  color: #991b1b;
+  border: 1px solid #7f1d1d;
+}
+.form-feedback p {
+  margin: 0;
+  line-height: 1.4;
 }
 
 @keyframes spin {
