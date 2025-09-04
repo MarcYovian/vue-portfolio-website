@@ -1,10 +1,11 @@
 <template>
-  <div class="about">
-    <div class="container">
-      <section class="intro-section fade-in-up">
-        <h1>About Me</h1>
-        <div class="intro-content">
-          <div class="intro-text">
+  <div class="about-page">
+    <!-- Section 1: Introduction -->
+    <section class="about-intro section-spacing">
+      <div class="container">
+        <div class="intro-grid">
+          <div class="intro-text fade-in-up">
+            <h1 class="page-title">About Me</h1>
             <p>
               Hi, I'm a passionate software developer with a deep love for
               creating innovative solutions that make a real difference. My
@@ -21,72 +22,77 @@
             </p>
             <p>
               When I'm not coding, you'll find me exploring new technologies, or
-              sharing knowledge with the developer community. I'm always excited
-              about the next challenge and the opportunity to learn something
-              new.
+              sharing knowledge with the developer community.
             </p>
           </div>
-          <div class="intro-stats">
-            <div class="stat-card card">
+          <div class="intro-stats fade-in">
+            <div class="stat-card">
               <h3>1+</h3>
               <p>Years Experience</p>
             </div>
-            <div class="stat-card card">
+            <div class="stat-card">
               <h3>5+</h3>
               <p>Projects Completed</p>
             </div>
-            <div class="stat-card card">
+            <div class="stat-card">
               <h3>2</h3>
               <p>Happy Clients</p>
             </div>
           </div>
         </div>
-      </section>
-
-      <div v-if="isLoading">
-        <section class="career-section">
-          <div class="skeleton skeleton-title"></div>
-          <div class="timeline" style="max-width: 800px; margin: 0 auto">
-            <div
-              v-for="n in 2"
-              :key="n"
-              class="skeleton skeleton-timeline-item"
-            ></div>
-          </div>
-        </section>
-        <section class="education-section">
-          <div class="skeleton skeleton-title"></div>
-          <div class="education-grid grid grid-2">
-            <div v-for="n in 2" :key="n" class="skeleton skeleton-card"></div>
-          </div>
-        </section>
       </div>
+    </section>
 
-      <section v-else-if="error" class="error-state">
-        <GraduationCap :size="48" class="error-icon" />
-        <h3>Oops, Terjadi Kesalahan</h3>
-        <p>{{ error }}</p>
-        <button @click="fetchAllData" class="btn btn-primary">Coba Lagi</button>
+    <!-- Loading State -->
+    <div v-if="isLoading" class="container section-spacing">
+      <!-- Skeleton for Career -->
+      <section>
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-timeline-item"></div>
+        <div class="skeleton skeleton-timeline-item"></div>
       </section>
+      <!-- Skeleton for Education -->
+      <section>
+        <div class="skeleton skeleton-title"></div>
+        <div class="education-grid">
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+        </div>
+      </section>
+    </div>
 
-      <div v-else>
-        <section v-if="experiences.length > 0" class="career-section">
-          <h2>Professional Experience</h2>
+    <!-- Error State -->
+    <div v-else-if="error" class="container section-spacing error-state">
+      <GraduationCap :size="48" class="error-icon" />
+      <h3>Oops, Something Went Wrong</h3>
+      <p>{{ error }}</p>
+      <button @click="fetchAllData" class="btn btn-primary">Try Again</button>
+    </div>
+
+    <!-- Content Loaded State -->
+    <div v-else>
+      <!-- Section 2: Career Journey (Timeline) -->
+      <section
+        v-if="experiences.length > 0"
+        class="career-section section-spacing"
+      >
+        <div class="container">
+          <h2 class="section-title">Career Journey</h2>
           <div class="timeline">
             <div
               v-for="(experience, index) in experiences"
               :key="index"
               class="timeline-item"
             >
-              <div class="timeline-marker">
-                <div class="timeline-dot"></div>
+              <div class="timeline-connector">
+                <div class="timeline-icon">
+                  <Briefcase :size="20" />
+                </div>
               </div>
               <div class="timeline-content card">
-                <div class="timeline-header">
-                  <h3>{{ experience.role }}</h3>
-                  <span class="company">{{ experience.company }}</span>
-                  <span class="period">{{ experience.period }}</span>
-                </div>
+                <span class="period">{{ experience.period }}</span>
+                <h3>{{ experience.role }}</h3>
+                <span class="company">{{ experience.company }}</span>
                 <p class="description">{{ experience.description }}</p>
                 <ul class="achievements">
                   <li
@@ -107,18 +113,26 @@
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section v-if="educations.length > 0" class="education-section">
-          <h2>Education</h2>
-          <div class="education-grid grid grid-2">
+      <!-- Section 3: Education -->
+      <section
+        v-if="educations.length > 0"
+        class="education-section section-spacing"
+      >
+        <div class="container">
+          <h2 class="section-title">Education</h2>
+          <div class="education-grid">
             <div
               v-for="education in educations"
               :key="education.degree"
               class="education-card card"
             >
-              <div class="education-icon"><GraduationCap :size="32" /></div>
-              <div class="education-content">
+              <div class="education-icon">
+                <GraduationCap :size="28" />
+              </div>
+              <div class="education-details">
                 <h3>{{ education.degree }}</h3>
                 <p class="institution">{{ education.institution }}</p>
                 <p class="year">{{ education.period }}</p>
@@ -131,29 +145,33 @@
               </div>
             </div>
           </div>
-        </section>
-
-        <div
-          v-if="experiences.length === 0 && educations.length === 0"
-          class="empty-state"
-        >
-          <p>Informasi pengalaman dan edukasi saat ini tidak tersedia.</p>
         </div>
+      </section>
+
+      <!-- Empty State -->
+      <div
+        v-if="experiences.length === 0 && educations.length === 0"
+        class="container section-spacing empty-state"
+      >
+        <p>
+          Experience and education information is not available at the moment.
+        </p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+// Script remains unchanged, it is already excellent.
 import axios from "axios";
-import { Check, GraduationCap } from "lucide-vue-next";
+import { Briefcase, Check, GraduationCap } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 
 const experiences = ref([]);
 const educations = ref([]);
 
 const isLoading = ref(true);
-const error = ref(null);
+const error = ref<string | null>(null);
 
 const fetchAllData = async () => {
   isLoading.value = true;
@@ -168,7 +186,7 @@ const fetchAllData = async () => {
     experiences.value = experiencesResponse.data.data;
     educations.value = educationsResponse.data.data;
   } catch (err) {
-    console.log("Error fetching data:", err);
+    console.error("Error fetching data:", err);
     error.value =
       "Sorry, something went wrong while fetching data. Please try again later.";
   } finally {
@@ -176,58 +194,121 @@ const fetchAllData = async () => {
   }
 };
 
-onMounted(async () => {
-  fetchAllData();
-});
+onMounted(fetchAllData);
 </script>
 
 <style scoped>
-.about {
-  padding: 2rem 0 6rem;
+/* GENERAL & UTILITIES */
+.about-page {
+  padding-bottom: 6rem;
+  /* Tambahkan ini untuk mencegah overflow secara global di halaman ini */
+  overflow-x: hidden;
 }
 
-.intro-section {
-  margin-bottom: 6rem;
+.section-spacing {
+  padding: 6rem 0;
 }
 
-.intro-section h1 {
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.page-title,
+.section-title {
+  font-weight: 700;
+  color: var(--text-primary);
   text-align: center;
-  margin-bottom: 3rem;
-  font-size: 3rem;
 }
 
-.intro-content {
+.page-title {
+  font-size: 3rem;
+  margin-bottom: 4rem;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  margin-bottom: 4rem;
+}
+
+/* ANIMATIONS */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.fade-in {
+  animation: fadeIn 1s ease-out forwards;
+  animation-delay: 0.2s;
+}
+
+/* INTRO SECTION */
+.about-intro {
+  padding-top: 6rem;
+  padding-bottom: 4rem;
+}
+.intro-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 4rem;
-  align-items: start;
-}
-
-.intro-text {
-  font-size: 1.1rem;
-  line-height: 1.7;
+  align-items: center;
+  gap: 5rem;
 }
 
 .intro-text p {
-  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  line-height: 1.8;
   color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+.intro-text p:last-child {
+  margin-bottom: 0;
 }
 
 .intro-stats {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .stat-card {
   text-align: center;
-  padding: 1.5rem;
+  padding: 2rem 1.5rem;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border);
 }
 
 .stat-card h3 {
-  font-size: 2rem;
+  font-size: 2.5rem;
+  font-weight: 700;
   color: var(--accent);
-  margin-bottom: 0.5rem;
+  margin: 0 0 0.5rem 0;
 }
 
 .stat-card p {
@@ -236,13 +317,9 @@ onMounted(async () => {
   margin: 0;
 }
 
+/* CAREER SECTION (TIMELINE) */
 .career-section {
-  margin-bottom: 6rem;
-}
-
-.career-section h2 {
-  text-align: center;
-  margin-bottom: 3rem;
+  background-color: var(--bg-secondary);
 }
 
 .timeline {
@@ -250,83 +327,90 @@ onMounted(async () => {
   max-width: 800px;
   margin: 0 auto;
 }
-
-.timeline::before {
+.timeline::after {
   content: "";
   position: absolute;
-  left: 20px;
-  top: 0;
-  bottom: 0;
   width: 2px;
   background-color: var(--border);
+  top: 0;
+  bottom: 0;
+  left: 30px;
 }
 
 .timeline-item {
   position: relative;
-  margin-bottom: 3rem;
-  padding-left: 60px;
+  padding: 0 0 3rem 80px;
+}
+.timeline-item:last-child {
+  padding-bottom: 0;
 }
 
-.timeline-marker {
+.timeline-connector {
   position: absolute;
   left: 0;
-  top: 0;
+  top: 5px;
+  width: 60px;
+  display: flex;
+  justify-content: center;
 }
 
-.timeline-dot {
-  width: 40px;
-  height: 40px;
-  background-color: var(--accent);
+.timeline-icon {
+  width: 44px;
+  height: 44px;
+  background-color: var(--accent-light, #ede7f6);
+  color: var(--accent);
   border-radius: 50%;
-  border: 4px solid var(--bg-primary);
-  box-shadow: 0 0 0 2px var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  border: 4px solid var(--bg-secondary);
 }
-
-.timeline-content {
-  padding: 2rem;
+.timeline-content.card {
+  background-color: var(--bg-primary);
 }
-
-.timeline-header {
+.period {
+  display: inline-block;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
   margin-bottom: 1rem;
 }
 
-.timeline-header h3 {
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
+.timeline-content h3 {
+  margin: 0 0 0.25rem 0;
 }
 
 .company {
   color: var(--accent);
-  font-weight: 500;
-  margin-right: 1rem;
-}
-
-.period {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: block;
 }
 
 .description {
   color: var(--text-secondary);
   margin-bottom: 1.5rem;
+  line-height: 1.6;
 }
 
 .achievements {
   list-style: none;
+  padding-left: 0;
   margin-bottom: 1.5rem;
 }
 
 .achievements li {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   margin-bottom: 0.5rem;
   color: var(--text-secondary);
+  align-items: flex-start;
 }
 
 .achievements li svg {
   color: var(--accent);
   flex-shrink: 0;
+  margin-top: 4px;
 }
 
 .skills {
@@ -337,69 +421,72 @@ onMounted(async () => {
 
 .tech-tag {
   background-color: var(--bg-tertiary);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   padding: 0.25rem 0.75rem;
-  border-radius: 12px;
+  border-radius: 999px;
   font-size: 0.8rem;
-  border: 1px solid var(--border);
+  font-weight: 500;
 }
 
-.education-section h2 {
-  text-align: center;
-  margin-bottom: 3rem;
+/* EDUCATION SECTION */
+.education-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
 }
 
 .education-card {
   display: flex;
+  align-items: center;
   gap: 1.5rem;
-  align-items: flex-start;
 }
 
 .education-icon {
   flex-shrink: 0;
   width: 60px;
   height: 60px;
-  background-color: var(--accent);
-  color: #000;
-  border-radius: 12px;
+  background-color: var(--accent-light, #ede7f6);
+  color: var(--accent);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.education-content h3 {
-  margin-bottom: 0.5rem;
+.education-details h3 {
+  margin: 0 0 0.25rem 0;
 }
-
 .institution {
-  color: var(--accent);
   font-weight: 500;
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
 }
-
 .year,
 .gpa {
   color: var(--text-secondary);
   font-size: 0.9rem;
-  margin-bottom: 0.25rem;
+  margin: 0;
 }
 
-.education-content .description {
+.education-details .description {
   color: var(--text-secondary);
   font-size: 0.9rem;
-  margin-top: 0.5rem;
+  line-height: 1.6;
+  margin-top: 0.75rem;
+  margin-bottom: 0;
 }
 
+/* ERROR, EMPTY & SKELETON STATES */
 .error-state,
 .empty-state {
   text-align: center;
-  padding: 4rem 0;
 }
 .error-icon {
   color: var(--accent);
   margin: 0 auto 1.5rem;
 }
-.error-state h3 {
+.error-state h3,
+.empty-state h3 {
   font-size: 1.75rem;
   margin-bottom: 1rem;
 }
@@ -408,74 +495,117 @@ onMounted(async () => {
   color: var(--text-secondary);
   margin-bottom: 2rem;
 }
-.error-state .btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
 
-/* Gaya untuk Skeleton Loader */
 @keyframes pulse {
   50% {
     opacity: 0.5;
   }
 }
-
 .skeleton {
   background-color: var(--bg-tertiary);
   border-radius: 8px;
   animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
-
 .skeleton-title {
-  height: 32px;
+  height: 36px;
   width: 280px;
-  margin: 0 auto 3rem;
+  margin: 0 auto 4rem;
 }
-
 .skeleton-timeline-item {
   height: 250px;
-  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 3rem;
   border-radius: 16px;
-  margin-bottom: 3rem;
 }
-
 .skeleton-card {
-  height: 180px;
+  height: 150px;
   border-radius: 16px;
 }
 
-@media (max-width: 768px) {
-  .intro-section h1 {
-    font-size: 2.5rem;
-  }
-
-  .intro-content {
+/* RESPONSIVE DESIGN */
+@media (max-width: 992px) {
+  .intro-grid {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 3rem;
   }
-
+  .intro-text {
+    order: 2;
+  }
   .intro-stats {
+    order: 1;
     flex-direction: row;
     justify-content: space-around;
   }
+}
 
-  .timeline::before {
-    left: 15px;
+@media (max-width: 768px) {
+  .section-spacing {
+    padding: 4rem 0;
+  }
+  .page-title {
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+  }
+  .section-title {
+    font-size: 2rem;
+    margin-bottom: 3rem;
   }
 
+  .timeline::after {
+    left: 22px;
+  }
   .timeline-item {
-    padding-left: 50px;
+    padding-left: 60px;
+  }
+  .timeline-connector {
+    width: 44px;
+  }
+}
+
+/* Penambahan media query untuk layar sangat kecil */
+@media (max-width: 400px) {
+  .timeline-item {
+    /* Mengurangi padding kiri untuk memberi lebih banyak ruang bagi konten */
+    padding-left: 55px;
+  }
+  .timeline::after {
+    /* Sedikit menggeser garis timeline */
+    left: 20px;
+  }
+  .timeline-connector {
+    /* Memastikan ikon tetap di tengah */
+    width: 40px;
+  }
+  .card {
+    /* Mengurangi padding di dalam kartu umum */
+    padding: 1.5rem;
   }
 
-  .timeline-dot {
-    width: 30px;
-    height: 30px;
+  /* --- Perbaikan untuk intro-stats agar bisa di-scroll --- */
+  .intro-stats {
+    justify-content: flex-start; /* Ganti dari space-around agar item mulai dari kiri */
+    overflow-x: auto; /* Aktifkan scroll horizontal */
+    padding-bottom: 1rem; /* Jarak untuk shadow & scrollbar (jika terlihat) */
+
+    /* Sembunyikan scrollbar untuk tampilan lebih bersih */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
-  .education-card {
-    flex-direction: column;
-    text-align: center;
+  .intro-stats::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+
+  .intro-stats .stat-card {
+    flex-shrink: 0; /* Mencegah kartu menyusut */
+    flex-basis: 150px; /* Tentukan lebar dasar kartu */
+    padding: 1.5rem; /* Tetapkan padding yang sudah dikurangi */
+  }
+  /* --- Akhir Perbaikan --- */
+
+  .education-grid {
+    /* Memastikan grid tidak memaksakan lebar minimum */
+    grid-template-columns: 1fr;
   }
 }
 </style>

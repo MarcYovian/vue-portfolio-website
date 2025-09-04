@@ -9,19 +9,19 @@
       </router-view>
     </main>
     <Footer />
-    <!-- <AchievementModal 
-      v-if="showModal" 
-      :achievement="selectedAchievement" 
-      @close="closeModal" 
-    /> -->
+    <AchievementModal
+      v-if="showModal"
+      :achievement="selectedAchievement"
+      @close="closeModal"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { provide, ref } from "vue";
+import AchievementModal from "./components/AchievementModal.vue";
 import Footer from "./components/Footer.vue";
 import Navbar from "./components/Navbar.vue";
-// import AchievementModal from './components/AchievementModal.vue'
 
 const showModal = ref(false);
 const selectedAchievement = ref(null);

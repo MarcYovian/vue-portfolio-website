@@ -45,6 +45,7 @@
           name="fade"
           tag="div"
           class="projects-grid grid grid-2"
+          :class="gridWrapperClass"
         >
           <div
             v-for="project in filteredProjects"
@@ -180,6 +181,17 @@ const filteredProjects = computed(() => {
   return projects.value.filter(
     (project) => project.category === activeFilter.value.name
   );
+});
+
+const gridWrapperClass = computed(() => {
+  const count = filteredProjects.value.length;
+  if (count === 1) {
+    return "layout-single-item";
+  }
+  if (count === 2) {
+    return "layout-two-items";
+  }
+  return "";
 });
 </script>
 
@@ -411,6 +423,22 @@ const filteredProjects = computed(() => {
   opacity: 0;
 }
 
+.projects-grid.layout-single-item,
+.projects-grid.layout-two-items {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.projects-grid.layout-single-item {
+  grid-template-columns: 1fr; /* Hanya buat 1 kolom */
+  max-width: 550px; /* Batasi lebar maksimum kartu proyek */
+}
+
+/* Jika hanya ada 2 item, batasi lebar containernya */
+.projects-grid.layout-two-items {
+  max-width: 1124px; /* Sesuaikan dengan lebar 2 kartu + gap */
+}
+
 @media (max-width: 768px) {
   .page-header h1 {
     font-size: 2.5rem;
@@ -439,6 +467,16 @@ const filteredProjects = computed(() => {
 
   .project-actions {
     flex-direction: column;
+  }
+
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Pastikan class layout kita tidak mengganggu di mobile */
+  .projects-grid.layout-single-item,
+  .projects-grid.layout-two-items {
+    max-width: 550px; /* Batas lebar tetap berlaku */
   }
 }
 </style>

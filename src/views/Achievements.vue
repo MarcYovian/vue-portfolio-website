@@ -3,39 +3,84 @@
     <div class="container">
       <header class="page-header fade-in-up">
         <h1>Achievements & Certifications</h1>
-        <p>A collection of my professional certifications, courses, and achievements that showcase my commitment to continuous learning and skill development.</p>
+        <p>
+          A collection of my professional certifications, courses, and
+          achievements that showcase my commitment to continuous learning and
+          skill development.
+        </p>
       </header>
 
-      <div class="achievements-grid grid grid-3">
-        <div 
-          v-for="achievement in achievements" 
-          :key="achievement.id"
-          class="achievement-card card"
-          @click="openModal(achievement)"
+      <div class="controls-section">
+        <div class="search-wrapper">
+          <Search :size="20" class="search-icon" />
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="Search by title or issuer..."
+            class="search-input"
+          />
+        </div>
+        <div class="filter-tags">
+          <button
+            v-for="tag in allTags"
+            :key="tag"
+            @click="activeTag = tag"
+            class="filter-btn"
+            :class="{ active: activeTag === tag }"
+          >
+            {{ tag }}
+          </button>
+        </div>
+      </div>
+
+      <div v-if="isLoading" class="achievements-grid grid grid-3">
+        <div v-for="n in 6" :key="n" class="skeleton skeleton-card"></div>
+      </div>
+
+      <div v-else-if="error" class="info-state">
+        <p>{{ error }}</p>
+        <button @click="fetchData" class="btn btn-primary">Try Again</button>
+      </div>
+
+      <div v-else>
+        <transition-group
+          name="fade"
+          tag="div"
+          class="achievements-grid grid grid-3"
+          :class="gridWrapperClass"
         >
-          <div class="achievement-image">
-            <img :src="achievement.image" :alt="achievement.title" loading="lazy" />
-            <div class="achievement-overlay">
-              <Eye :size="24" />
-              <span>View Certificate</span>
+          <div
+            v-for="achievement in filteredAchievements"
+            :key="achievement.id"
+            class="achievement-card card"
+            @click="openModal(achievement)"
+          >
+            <div class="achievement-image">
+              <img
+                :src="achievement.image_url"
+                :alt="achievement.title"
+                loading="lazy"
+              />
+              <div class="achievement-overlay">
+                <Eye :size="24" />
+                <span>View Certificate</span>
+              </div>
+            </div>
+            <div class="achievement-content">
+              <h3>{{ achievement.title }}</h3>
+              <p class="issuer">{{ achievement.issuer }}</p>
+              <p class="date">{{ achievement.formatted_date }}</p>
+              <div class="achievement-tags">
+                <span v-for="tag in achievement.tags" :key="tag" class="tag">
+                  {{ tag }}</span
+                >
+              </div>
             </div>
           </div>
-          
-          <div class="achievement-content">
-            <h3>{{ achievement.title }}</h3>
-            <p class="issuer">{{ achievement.issuer }}</p>
-            <p class="date">{{ achievement.date }}</p>
-            
-            <div class="achievement-tags">
-              <span 
-                v-for="tag in achievement.tags" 
-                :key="tag"
-                class="tag"
-              >
-                {{ tag }}
-              </span>
-            </div>
-          </div>
+        </transition-group>
+
+        <div v-if="filteredAchievements.length === 0" class="info-state">
+          <p>No achievements found matching your criteria.</p>
         </div>
       </div>
     </div>
@@ -43,107 +88,75 @@
 </template>
 
 <script setup lang="ts">
-import { inject } from 'vue'
-import { Eye } from 'lucide-vue-next'
+import axios from "axios";
+import { Eye, Search } from "lucide-vue-next";
+import { computed, inject, onMounted, ref } from "vue";
 
-const modal = inject('modal') as any
+const achievements = ref([]);
+const isLoading = ref(true);
+const error = ref(null);
+const modal = inject("modal") as any;
+
+const searchQuery = ref("");
+const allTags = ref<string[]>([]);
+const activeTag = ref("All");
+
+const fetchData = async () => {
+  isLoading.value = true;
+  error.value = null;
+  try {
+    const response = await axios.get(
+      "https://panel.marcyovian.my.id/api/achievements"
+    );
+    achievements.value = response.data.data;
+
+    const tags = new Set<string>();
+    achievements.value.forEach((ach: any) =>
+      ach.tags.forEach((tag: any) => tags.add(tag))
+    );
+    allTags.value = ["All", ...Array.from(tags)];
+  } catch (err) {
+    console.error("Failed to fetch achievements:", err);
+    error.value = "Failed to load achievements. Please try again later.";
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(fetchData);
+
+const filteredAchievements = computed(() => {
+  let result = achievements.value;
+  if (activeTag.value !== "All") {
+    result = result.filter((ach: any) =>
+      ach.tags.some((tag: any) => tag === activeTag.value)
+    );
+  }
+  if (searchQuery.value.trim()) {
+    const lowerCaseQuery = searchQuery.value.toLowerCase();
+    result = result.filter(
+      (ach: any) =>
+        ach.title.toLowerCase().includes(lowerCaseQuery) ||
+        ach.issuer.toLowerCase().includes(lowerCaseQuery)
+    );
+  }
+  return result;
+});
 
 const openModal = (achievement: any) => {
-  modal.openModal(achievement)
-}
+  modal.openModal(achievement);
+};
 
-const achievements = [
-  {
-    id: 1,
-    title: 'AWS Certified Solutions Architect',
-    issuer: 'Amazon Web Services',
-    date: 'March 2024',
-    image: 'https://images.pexels.com/photos/6963098/pexels-photo-6963098.jpeg?auto=compress&cs=tinysrgb&w=400',
-    description: 'Demonstrated expertise in designing distributed systems and architectures on AWS platform.',
-    credentialUrl: 'https://aws.amazon.com/certification/',
-    tags: ['AWS', 'Cloud Architecture', 'DevOps']
-  },
-  {
-    id: 2,
-    title: 'Google Cloud Professional Developer',
-    issuer: 'Google Cloud',
-    date: 'January 2024',
-    image: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=400',
-    description: 'Certified in building scalable and reliable applications on Google Cloud Platform.',
-    credentialUrl: 'https://cloud.google.com/certification/',
-    tags: ['GCP', 'Cloud Development', 'Kubernetes']
-  },
-  {
-    id: 3,
-    title: 'MongoDB Certified Developer',
-    issuer: 'MongoDB University',
-    date: 'December 2023',
-    image: 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=400',
-    description: 'Expertise in MongoDB database design, development, and administration.',
-    credentialUrl: 'https://university.mongodb.com/',
-    tags: ['MongoDB', 'NoSQL', 'Database']
-  },
-  {
-    id: 4,
-    title: 'React Advanced Patterns',
-    issuer: 'Meta (Facebook)',
-    date: 'November 2023',
-    image: 'https://images.pexels.com/photos/11035471/pexels-photo-11035471.jpeg?auto=compress&cs=tinysrgb&w=400',
-    description: 'Advanced React concepts including hooks, context, and performance optimization.',
-    credentialUrl: 'https://developers.facebook.com/docs/react/',
-    tags: ['React', 'Frontend', 'JavaScript']
-  },
-  {
-    id: 5,
-    title: 'Machine Learning Specialization',
-    issuer: 'Stanford University (Coursera)',
-    date: 'October 2023',
-    image: 'https://images.pexels.com/photos/8386434/pexels-photo-8386434.jpeg?auto=compress&cs=tinysrgb&w=400',
-    description: 'Comprehensive course covering supervised learning, unsupervised learning, and neural networks.',
-    credentialUrl: 'https://www.coursera.org/specializations/machine-learning',
-    tags: ['Machine Learning', 'Python', 'AI']
-  },
-  {
-    id: 6,
-    title: 'Docker Certified Associate',
-    issuer: 'Docker Inc.',
-    date: 'September 2023',
-    image: 'https://images.pexels.com/photos/6963944/pexels-photo-6963944.jpeg?auto=compress&cs=tinysrgb&w=400',
-    description: 'Proficiency in Docker containerization, orchestration, and best practices.',
-    credentialUrl: 'https://www.docker.com/certification/',
-    tags: ['Docker', 'Containerization', 'DevOps']
-  },
-  {
-    id: 7,
-    title: 'Vue.js 3 Certification',
-    issuer: 'Vue School',
-    date: 'August 2023',
-    image: 'https://images.pexels.com/photos/11035540/pexels-photo-11035540.jpeg?auto=compress&cs=tinysrgb&w=400',
-    description: 'Mastery of Vue.js 3 Composition API, Pinia, and modern Vue.js development practices.',
-    credentialUrl: 'https://vueschool.io/',
-    tags: ['Vue.js', 'Frontend', 'JavaScript']
-  },
-  {
-    id: 8,
-    title: 'Kubernetes Administrator (CKA)',
-    issuer: 'Cloud Native Computing Foundation',
-    date: 'July 2023',
-    image: 'https://images.pexels.com/photos/11035226/pexels-photo-11035226.jpeg?auto=compress&cs=tinysrgb&w=400',
-    description: 'Hands-on certification demonstrating skills in Kubernetes cluster administration.',
-    credentialUrl: 'https://www.cncf.io/certification/cka/',
-    tags: ['Kubernetes', 'Container Orchestration', 'DevOps']
-  },
-  {
-    id: 9,
-    title: 'TensorFlow Developer Certificate',
-    issuer: 'Google',
-    date: 'June 2023',
-    image: 'https://images.pexels.com/photos/8386422/pexels-photo-8386422.jpeg?auto=compress&cs=tinysrgb&w=400',
-    description: 'Demonstrated proficiency in building and deploying machine learning models using TensorFlow.',
-    credentialUrl: 'https://www.tensorflow.org/certificate',
-    tags: ['TensorFlow', 'Deep Learning', 'AI']
+const gridWrapperClass = computed(() => {
+  const count = filteredAchievements.value.length;
+  if (count === 1) {
+    return "layout-single-item"; // Class untuk 1 item
   }
-]
+  if (count === 2) {
+    return "layout-two-items"; // Class untuk 2 item
+  }
+  return ""; // Default jika lebih dari 2
+});
 </script>
 
 <style scoped>
@@ -269,17 +282,125 @@ const achievements = [
   border: 1px solid var(--border);
 }
 
+.controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+.search-wrapper {
+  position: relative;
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
+}
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+}
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border: 2px solid var(--border);
+  border-radius: 25px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.filter-tags {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.filter-btn {
+  padding: 0.5rem 1.25rem;
+  border: 2px solid var(--border);
+  background-color: transparent;
+  color: var(--text-secondary);
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.filter-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.filter-btn.active {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+.info-state {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--text-secondary);
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.6;
+  }
+}
+.skeleton-card {
+  height: 320px;
+  background-color: var(--bg-secondary);
+  border-radius: 16px;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.achievements-grid.layout-single-item,
+.achievements-grid.layout-two-items {
+  /* Mencegah grid memenuhi seluruh lebar container */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Jika hanya ada 1 item */
+.achievements-grid.layout-single-item {
+  grid-template-columns: 1fr; /* Hanya buat 1 kolom */
+  max-width: 400px; /* Batasi lebar maksimum agar tidak terlalu besar */
+}
+
+/* Jika hanya ada 2 item */
+.achievements-grid.layout-two-items {
+  grid-template-columns: repeat(2, 1fr); /* Buat 2 kolom */
+  max-width: 820px; /* Lebar maksimum untuk 2 kartu + gap */
+}
+
 @media (max-width: 768px) {
   .page-header h1 {
     font-size: 2.5rem;
   }
-  
+
   .achievements-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .achievement-image {
     height: 160px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .achievements-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>

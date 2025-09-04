@@ -1,66 +1,95 @@
 <template>
-  <div class="modal-overlay" @click="$emit('close')">
-    <div class="modal-content" @click.stop>
-      <button @click="$emit('close')" class="modal-close" aria-label="Close modal">
-        <X :size="24" />
-      </button>
-      
-      <div class="modal-body">
-        <div class="achievement-image">
-          <img :src="achievement.image" :alt="achievement.title" />
-        </div>
-        
-        <div class="achievement-details">
-          <h3>{{ achievement.title }}</h3>
-          <p class="issuer">{{ achievement.issuer }}</p>
-          <p class="date">{{ achievement.date }}</p>
-          <p class="description">{{ achievement.description }}</p>
-          
-          <div class="modal-actions">
-            <a 
-              v-if="achievement.credentialUrl" 
-              :href="achievement.credentialUrl" 
-              target="_blank" 
-              class="btn btn-primary"
-            >
-              View Credential
-              <ExternalLink :size="16" />
-            </a>
+  <Transition name="modal-fade">
+    <div class="modal-overlay" @click="$emit('close')">
+      <div class="modal-content" @click.stop>
+        <button
+          @click="$emit('close')"
+          class="modal-close"
+          aria-label="Close modal"
+        >
+          <X :size="24" />
+        </button>
+
+        <div class="modal-body">
+          <div class="achievement-image-wrapper">
+            <img :src="achievement.image_url" :alt="achievement.title" />
+          </div>
+
+          <div class="achievement-details">
+            <h2 class="modal-title">{{ achievement.title }}</h2>
+            <p class="issuer">
+              <Award :size="16" />
+              <span>{{ achievement.issuer }}</span>
+            </p>
+            <p class="date">
+              <Calendar :size="16" />
+              <span>{{ achievement.date }}</span>
+            </p>
+            <p class="description">{{ achievement.description }}</p>
+
+            <div class="modal-actions">
+              <a
+                v-if="achievement.credential_url"
+                :href="achievement.credential_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-primary"
+              >
+                View Credential
+                <ExternalLink :size="16" />
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">
-import { X, ExternalLink } from 'lucide-vue-next'
+import { Award, Calendar, ExternalLink, X } from "lucide-vue-next";
 
 defineProps<{
   achievement: {
-    id: number
-    title: string
-    issuer: string
-    date: string
-    image: string
-    description: string
-    credentialUrl?: string
-  }
-}>()
+    id: number;
+    title: string;
+    issuer: string;
+    date: string;
+    image_url: string;
+    description: string;
+    credential_url?: string;
+  };
+}>();
 
 defineEmits<{
-  close: []
-}>()
+  close: [];
+}>();
 </script>
 
 <style scoped>
+/* MODAL TRANSITIONS */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+.modal-fade-enter-active .modal-content,
+.modal-fade-leave-active .modal-content {
+  transition: transform 0.3s ease;
+}
+.modal-fade-enter-from .modal-content,
+.modal-fade-leave-to .modal-content {
+  transform: scale(0.95);
+}
+
+/* MODAL OVERLAY & CONTENT */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8);
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -72,11 +101,12 @@ defineEmits<{
   background-color: var(--bg-primary);
   border: 1px solid var(--border);
   border-radius: 16px;
-  max-width: 600px;
+  max-width: 800px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
 .modal-close {
@@ -88,69 +118,98 @@ defineEmits<{
   border: none;
   background-color: var(--bg-secondary);
   color: var(--text-secondary);
-  border-radius: 8px;
+  border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  z-index: 1;
+  z-index: 10;
 }
 
 .modal-close:hover {
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
+  transform: rotate(90deg);
 }
 
+/* MODAL BODY LAYOUT */
 .modal-body {
-  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 2.5rem;
+  padding: 2.5rem;
 }
 
-.achievement-image {
-  text-align: center;
-  margin-bottom: 2rem;
+.achievement-image-wrapper {
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+  align-self: start;
 }
 
-.achievement-image img {
-  max-width: 100%;
+.achievement-image-wrapper img {
+  width: 100%;
   height: auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px var(--shadow);
+  display: block;
 }
 
-.achievement-details h3 {
+/* ACHIEVEMENT DETAILS */
+.modal-title {
   color: var(--text-primary);
-  margin-bottom: 0.5rem;
+  margin: 0 0 1rem 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
-.issuer {
-  color: var(--accent);
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-}
-
+.issuer,
 .date {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+}
+.issuer span,
+.date span {
+  font-size: 0.95rem;
+}
+.issuer svg {
+  color: var(--accent);
+}
+.date svg {
+  color: var(--text-secondary);
 }
 
 .description {
   color: var(--text-secondary);
-  margin-bottom: 2rem;
+  line-height: 1.7;
+  margin: 1.5rem 0 2rem 0;
 }
 
 .modal-actions {
-  text-align: center;
+  text-align: left;
+}
+.modal-actions .btn {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
+/* RESPONSIVE DESIGN FOR MODAL */
 @media (max-width: 768px) {
-  .modal-content {
-    margin: 0.5rem;
-  }
-  
   .modal-body {
-    padding: 1.5rem;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2rem;
+  }
+  .modal-title {
+    font-size: 1.5rem;
+  }
+  .modal-close {
+    top: 0.75rem;
+    right: 0.75rem;
   }
 }
 </style>
