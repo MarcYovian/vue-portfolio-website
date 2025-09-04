@@ -10,154 +10,176 @@
         </p>
       </header>
 
-      <!-- Filter Tabs -->
-      <div class="filters">
-        <button
-          v-for="category in categories"
-          :key="category"
-          @click="setActiveFilter(category)"
-          class="filter-btn"
-          :class="{ active: activeFilter === category }"
-        >
-          {{ category }}
-        </button>
+      <div v-if="isLoading">
+        <div class="filters">
+          <div v-for="n in 4" :key="n" class="skeleton skeleton-filter"></div>
+        </div>
+        <div class="projects-grid grid grid-2">
+          <div v-for="n in 4" :key="n" class="skeleton skeleton-card"></div>
+        </div>
       </div>
 
-      <!-- Projects Grid -->
-      <div class="projects-grid grid grid-2">
-        <div
-          v-for="project in filteredProjects"
-          :key="project.id"
-          class="project-card card fade-in-up"
+      <section v-else-if="error" class="error-state">
+        <Github :size="48" class="error-icon" />
+        <h3>Oops, Terjadi Kesalahan</h3>
+        <p>{{ error }}</p>
+        <button @click="fetchAllData" class="btn btn-primary">Coba Lagi</button>
+      </section>
+
+      <div v-else>
+        <!-- Filter Tabs -->
+        <div class="filters">
+          <button
+            v-for="category in categories"
+            :key="category"
+            @click="setActiveFilter(category)"
+            class="filter-btn"
+            :class="{ active: activeFilter.name === category.name }"
+          >
+            {{ category.name }}
+          </button>
+        </div>
+
+        <!-- Projects Grid -->
+        <transition-group
+          name="fade"
+          tag="div"
+          class="projects-grid grid grid-2"
         >
-          <div class="project-image">
-            <img :src="project.image" :alt="project.title" loading="lazy" />
-            <div class="project-overlay">
-              <div class="project-links">
-                <a
-                  v-if="project.demoUrl"
-                  :href="project.demoUrl"
-                  target="_blank"
-                  class="project-link"
-                  aria-label="View live demo"
+          <div
+            v-for="project in filteredProjects"
+            :key="project.id"
+            class="project-card card fade-in-up"
+          >
+            <div class="project-image">
+              <img
+                :src="project.image_url"
+                :alt="project.title"
+                loading="lazy"
+              />
+              <div class="project-overlay">
+                <div class="project-links">
+                  <a
+                    v-if="project.demo_url"
+                    :href="project.demo_url"
+                    target="_blank"
+                    class="project-link"
+                    aria-label="View live demo"
+                  >
+                    <ExternalLink :size="20" />
+                  </a>
+                  <a
+                    v-if="project.github_url"
+                    :href="project.github_url"
+                    target="_blank"
+                    class="project-link"
+                    aria-label="View source code"
+                  >
+                    <Github :size="20" />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="project-content">
+              <h3>{{ project.title }}</h3>
+              <p class="project-description">{{ project.description }}</p>
+
+              <div class="project-tech">
+                <span
+                  v-for="tech in project.technologies"
+                  :key="tech"
+                  class="tech-tag"
                 >
-                  <ExternalLink :size="20" />
+                  {{ tech }}
+                </span>
+              </div>
+
+              <div class="project-actions">
+                <a
+                  v-if="project.demo_url"
+                  :href="project.demo_url"
+                  target="_blank"
+                  class="btn btn-primary btn-small"
+                >
+                  <ExternalLink :size="16" />
+                  Live Demo
                 </a>
                 <a
-                  v-if="project.githubUrl"
-                  :href="project.githubUrl"
+                  v-if="project.github_url"
+                  :href="project.github_url"
                   target="_blank"
-                  class="project-link"
-                  aria-label="View source code"
+                  class="btn btn-secondary btn-small"
                 >
-                  <Github :size="20" />
+                  <Github :size="16" />
+                  Source Code
                 </a>
               </div>
             </div>
           </div>
-
-          <div class="project-content">
-            <h3>{{ project.title }}</h3>
-            <p class="project-description">{{ project.description }}</p>
-
-            <div class="project-tech">
-              <span
-                v-for="tech in project.technologies"
-                :key="tech"
-                class="tech-tag"
-              >
-                {{ tech }}
-              </span>
-            </div>
-
-            <div class="project-actions">
-              <a
-                v-if="project.demoUrl"
-                :href="project.demoUrl"
-                target="_blank"
-                class="btn btn-primary btn-small"
-              >
-                <ExternalLink :size="16" />
-                Live Demo
-              </a>
-              <a
-                v-if="project.githubUrl"
-                :href="project.githubUrl"
-                target="_blank"
-                class="btn btn-secondary btn-small"
-              >
-                <Github :size="16" />
-                Source Code
-              </a>
-            </div>
-          </div>
+        </transition-group>
+        <!-- Empty State -->
+        <div
+          v-if="filteredProjects.length === 0 && !isLoading"
+          class="empty-state"
+        >
+          <p>No projects found for the "{{ activeFilter.name }}" category.</p>
         </div>
-      </div>
-
-      <!-- Empty State -->
-      <div v-if="filteredProjects.length === 0" class="empty-state">
-        <p>No projects found for the selected category.</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import axios from "axios";
 import { ExternalLink, Github } from "lucide-vue-next";
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
-const activeFilter = ref("All");
-const categories = ["All", "Web", "Mobile", "Backend", "Machine Learning"];
+const projects = ref([]);
+const categories = ref([]);
+const activeFilter = ref({ id: "all", name: "All" });
 
-const setActiveFilter = (category: string) => {
+const setActiveFilter = (category) => {
   activeFilter.value = category;
 };
 
-const projects = [
-  {
-    id: 1,
-    title: "St. John the Apostle Chapel Information System",
-    description:
-      "Full-stack organizational information system with event scheduling, asset borrowing, and intelligent document management.",
-    image: "/images/project-sinyora.png",
-    technologies: ["Laravel", "Livewire", "Tailwind CSS", "MySQL"],
-    category: "Web",
-    demoUrl: "https://sinyora.my.id/",
-  },
-  {
-    id: 2,
-    title: "Document Processing API",
-    description:
-      "Intelligent API for automated document processing, capable of performing OCR, document classification, named entity recognition (NER), and extracting structured information from various document types.",
-    image: "/images/project-ai-sinyora.png",
-    technologies: [
-      "Python",
-      "Flask",
-      "Huggingface",
-      "IndoBERT",
-      "Transformers",
-    ],
-    category: "Machine Learning",
-    githubUrl: "https://github.com/MarcYovian/document-processing-api",
-  },
-  {
-    id: 3,
-    title: "Telkom University Parking Information System",
-    description:
-      "A cross-platform mobile application for Telkom University's Parking Information System, allowing users to find and manage parking spots in real-time. The app features user authentication, profile management, and QR code generation for parking validation.",
-    image:
-      "https://github.com/MarcYovian/TelU_PIS/assets/90125356/8b99a3ea-047f-4d4f-826b-dc02d07958c9",
-    technologies: ["Flutter", "Firebase", "Provider"],
-    category: "Mobile",
-    githubUrl: "https://github.com/MarcYovian/TelU_PIS",
-  },
-];
+const isLoading = ref(true);
+const error = ref(null);
+
+const fetchAllData = async () => {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const [projectCategoriesResponse, projectsResponse] = await Promise.all([
+      axios.get("https://panel.marcyovian.my.id/api/project-categories"),
+      axios.get("https://panel.marcyovian.my.id/api/projects"),
+    ]);
+
+    categories.value = [
+      { id: "all", name: "All" },
+      ...projectCategoriesResponse.data.data,
+    ];
+    projects.value = projectsResponse.data.data;
+  } catch (err) {
+    console.log("Error fetching data:", err);
+    error.value =
+      "Sorry, something went wrong while fetching data. Please try again later.";
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(fetchAllData);
 
 const filteredProjects = computed(() => {
-  if (activeFilter.value === "All") {
-    return projects;
+  if (activeFilter.value.name === "All") {
+    return projects.value;
   }
-  return projects.filter((project) => project.category === activeFilter.value);
+  // Diasumsikan setiap project memiliki properti `category_name`
+  return projects.value.filter(
+    (project) => project.category === activeFilter.value.name
+  );
 });
 </script>
 
@@ -337,6 +359,56 @@ const filteredProjects = computed(() => {
   padding: 4rem 2rem;
   color: var(--text-secondary);
   font-size: 1.1rem;
+}
+
+.error-state {
+  text-align: center;
+  padding: 4rem 0;
+}
+.error-icon {
+  color: var(--accent);
+  margin: 0 auto 1.5rem;
+}
+.error-state h3 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+.error-state p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+/* Gaya untuk Skeleton Loader */
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton {
+  background-color: var(--bg-tertiary);
+  border-radius: 16px;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.skeleton-filter {
+  height: 48px;
+  width: 120px;
+  border-radius: 25px;
+}
+
+.skeleton-card {
+  height: 450px; /* Sesuaikan dengan tinggi kartu proyek Anda */
+}
+
+/* Gaya untuk Transisi Fade */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 @media (max-width: 768px) {
