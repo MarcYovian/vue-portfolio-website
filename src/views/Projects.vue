@@ -31,7 +31,7 @@
         <div class="filters">
           <button
             v-for="category in categories"
-            :key="category"
+            :key="category.id"
             @click="setActiveFilter(category)"
             class="filter-btn"
             :class="{ active: activeFilter.name === category.name }"
@@ -136,16 +136,32 @@ import axios from "axios";
 import { ExternalLink, Github } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
 
-const projects = ref([]);
-const categories = ref([]);
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Project {
+  id: number;
+  title: string;
+  description: string;
+  image_url: string;
+  demo_url: string;
+  github_url: string;
+  category: string;
+  technologies: string[];
+}
+
+const projects = ref<Project[]>([]);
+const categories = ref<Category[]>([]);
 const activeFilter = ref({ id: "all", name: "All" });
 
-const setActiveFilter = (category) => {
+const setActiveFilter = (category: Category) => {
   activeFilter.value = category;
 };
 
 const isLoading = ref(true);
-const error = ref(null);
+const error = ref<string | null>(null);
 
 const fetchAllData = async () => {
   isLoading.value = true;
@@ -179,7 +195,7 @@ const filteredProjects = computed(() => {
   }
   // Diasumsikan setiap project memiliki properti `category_name`
   return projects.value.filter(
-    (project) => project.category === activeFilter.value.name
+    (project: Project) => project.category === activeFilter.value.name
   );
 });
 

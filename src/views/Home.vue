@@ -154,9 +154,22 @@ const roles = [
   "Full-Stack Developer",
 ];
 
+interface SkillCategory {
+  name: string;
+  icon: string;
+  skills: string[];
+}
+
+interface Service {
+  title: string;
+  icon: string;
+  description: string;
+  features: string[];
+}
+
 // Inisialisasi state
-const skillCategories = ref([]);
-const services = ref([]);
+const skillCategories = ref<SkillCategory[]>([]);
+const services = ref<Service[]>([]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 

@@ -167,8 +167,28 @@ import axios from "axios";
 import { Briefcase, Check, GraduationCap } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 
-const experiences = ref([]);
-const educations = ref([]);
+interface Experience {
+  id: number;
+  role: string;
+  company: string;
+  period: string;
+  description: string;
+  achievements: string[];
+  skills: string[];
+}
+
+interface Education {
+  id: number;
+  degree: string;
+  institution: string;
+  period: string;
+  gpa?: string;
+  max_gpa?: string;
+  description?: string;
+}
+
+const experiences = ref<Experience[]>([]);
+const educations = ref<Education[]>([]);
 
 const isLoading = ref(true);
 const error = ref<string | null>(null);

@@ -10,7 +10,7 @@
     </main>
     <Footer />
     <AchievementModal
-      v-if="showModal"
+      v-if="selectedAchievement"
       :achievement="selectedAchievement"
       @close="closeModal"
     />
@@ -23,16 +23,13 @@ import AchievementModal from "./components/AchievementModal.vue";
 import Footer from "./components/Footer.vue";
 import Navbar from "./components/Navbar.vue";
 
-const showModal = ref(false);
 const selectedAchievement = ref(null);
 
 const openModal = (achievement: any) => {
   selectedAchievement.value = achievement;
-  showModal.value = true;
 };
 
 const closeModal = () => {
-  showModal.value = false;
   selectedAchievement.value = null;
 };
 

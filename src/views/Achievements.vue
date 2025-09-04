@@ -92,9 +92,19 @@ import axios from "axios";
 import { Eye, Search } from "lucide-vue-next";
 import { computed, inject, onMounted, ref } from "vue";
 
-const achievements = ref([]);
+interface Achievement {
+  id: number;
+  title: string;
+  issuer: string;
+  date: string;
+  formatted_date: string;
+  image_url: string;
+  tags: string[];
+}
+
+const achievements = ref<Achievement[]>([]);
 const isLoading = ref(true);
-const error = ref(null);
+const error = ref<string | null>(null);
 const modal = inject("modal") as any;
 
 const searchQuery = ref("");
