@@ -132,6 +132,7 @@
 </template>
 
 <script setup lang="ts">
+import { useHead } from "@vueuse/head";
 import axios from "axios";
 import { ExternalLink, Github } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
@@ -208,6 +209,52 @@ const gridWrapperClass = computed(() => {
     return "layout-two-items";
   }
   return "";
+});
+
+useHead({
+  title: "My Projects - MarcYovian Portfolio",
+  meta: [
+    {
+      name: "description",
+      content:
+        "A showcase of my recent work, featuring web applications, mobile apps, and machine learning projects. Each project represents a unique challenge and learning opportunity.",
+    },
+    {
+      property: "og:title",
+      content: "My Projects - MarcYovian Portfolio",
+    },
+    {
+      property: "og:description",
+      content:
+        "Explore a collection of web applications, mobile apps, and machine learning projects. Each project showcases a unique challenge and learning opportunity.",
+    },
+    {
+      property: "og:image",
+      content: "https://marcyovian.my.id/images/og-projects.png",
+    },
+    {
+      property: "og:url",
+      content: "https://marcyovian.my.id/projects",
+    },
+    {
+      property: "og:type",
+      content: "website",
+    },
+    {
+      property: "og:site_name",
+      content: "MarcYovian Portfolio",
+    },
+    {
+      name: "twitter:card",
+      content: "summary_large_image",
+    },
+  ],
+  link: [
+    {
+      rel: "canonical",
+      href: "https://marcyovian.my.id/projects",
+    },
+  ],
 });
 </script>
 

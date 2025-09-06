@@ -162,7 +162,7 @@
 </template>
 
 <script setup lang="ts">
-// Script remains unchanged, it is already excellent.
+import { useHead } from "@vueuse/head";
 import axios from "axios";
 import { Briefcase, Check, GraduationCap } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
@@ -215,6 +215,51 @@ const fetchAllData = async () => {
 };
 
 onMounted(fetchAllData);
+
+useHead({
+  title: "About Me - MarcYovian Portfolio",
+  meta: [
+    {
+      name: "description",
+      // Mengambil esensi dari paragraf perkenalan Anda
+      content:
+        "Learn more about MarcYovian, a versatile full-stack developer with expertise in back-end systems, mobile applications, and machine learning. Discover my professional journey and educational background.",
+    },
+    // --- Open Graph Tags ---
+    {
+      property: "og:title",
+      content: "About Me - MarcYovian | Software Developer",
+    },
+    {
+      property: "og:description",
+      content:
+        "A passionate software developer specializing in creating innovative and scalable solutions. Explore my experience, skills, and career journey.",
+    },
+    {
+      property: "og:image",
+      content: "https://marcyovian.my.id/images/og-about.png",
+    },
+    {
+      property: "og:url",
+      content: "https://marcyovian.my.id/about",
+    },
+    {
+      property: "og:type",
+      content: "profile", // 'profile' adalah tipe yang cocok untuk halaman "About Me"
+    },
+    // --- Twitter Card Tags ---
+    {
+      name: "twitter:card",
+      content: "summary_large_image",
+    },
+  ],
+  link: [
+    {
+      rel: "canonical",
+      href: "https://marcyovian.my.id/about",
+    },
+  ],
+});
 </script>
 
 <style scoped>

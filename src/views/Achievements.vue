@@ -88,6 +88,7 @@
 </template>
 
 <script setup lang="ts">
+import { useHead } from "@vueuse/head";
 import axios from "axios";
 import { Eye, Search } from "lucide-vue-next";
 import { computed, inject, onMounted, ref } from "vue";
@@ -166,6 +167,53 @@ const gridWrapperClass = computed(() => {
     return "layout-two-items"; // Class untuk 2 item
   }
   return ""; // Default jika lebih dari 2
+});
+
+useHead({
+  title: "Achievements & Certifications - MarcYovian Portfolio",
+  meta: [
+    {
+      name: "description",
+      // Ringkasan dari header halaman yang sudah ada
+      content:
+        "Explore professional certifications and achievements by MarcYovian, showcasing a commitment to continuous learning and skill development in technology.",
+    },
+    // --- Open Graph Tags ---
+    {
+      property: "og:title",
+      content: "Achievements & Certifications | MarcYovian",
+    },
+    {
+      property: "og:description",
+      content:
+        "A collection of professional certifications and awards demonstrating my dedication to skill development.",
+    },
+    {
+      property: "og:image",
+      // Buat gambar banner khusus untuk halaman ini
+      // dan letakkan di `public/images/og-achievements.png`
+      content: "https://marcyovian.my.id/images/og-achievements.png",
+    },
+    {
+      property: "og:url",
+      content: "https://marcyovian.my.id/achievements",
+    },
+    {
+      property: "og:type",
+      content: "website",
+    },
+    // --- Twitter Card Tags ---
+    {
+      name: "twitter:card",
+      content: "summary_large_image",
+    },
+  ],
+  link: [
+    {
+      rel: "canonical",
+      href: "https://marcyovian.my.id/achievements",
+    },
+  ],
 });
 </script>
 

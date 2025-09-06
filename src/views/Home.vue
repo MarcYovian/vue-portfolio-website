@@ -141,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-// Tidak ada perubahan pada script, sudah sangat baik!
+import { useHead } from "@vueuse/head";
 import axios from "axios";
 import { Check } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
@@ -198,6 +198,52 @@ const fetchAllData = async () => {
 
 // Panggil fetchAllData saat komponen di-mount
 onMounted(fetchAllData);
+
+useHead({
+  title: "Home | MarcYovian Portfolio",
+  meta: [
+    {
+      name: "description",
+      content:
+        "Hi, I'm Marcellinus Yovian, a passionate web developer from Indonesia. Explore my portfolio to learn more about my skills and experience in web development.",
+    },
+    {
+      property: "og:title",
+      content: "Home | MarcYovian Portfolio",
+    },
+    {
+      property: "og:description",
+      content:
+        "Explore the portfolio of Marcellinus Yovian, a passionate developer creating scaleable and user-friendly web applications.",
+    },
+    {
+      property: "og:image",
+      content: "https://marcyovian.my.id/images/og-home.png",
+    },
+    {
+      property: "og:url",
+      content: "https://marcyovian.my.id/",
+    },
+    {
+      property: "og:type",
+      content: "website",
+    },
+    {
+      name: "og:site_name",
+      content: "MarcYovian Portfolio",
+    },
+    {
+      name: "twitter:card",
+      content: "summary_large_image",
+    },
+  ],
+  link: [
+    {
+      rel: "canonical",
+      href: "https://marcyovian.my.id/",
+    },
+  ],
+});
 </script>
 
 <style scoped>
