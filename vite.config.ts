@@ -8,7 +8,7 @@ export default defineConfig({
     vue(),
     sitemap({
       hostname: "https://marcyovian.my.id",
-      dynamicRoutes: ["/", "/about", "/projects", "/achievements", "/contacts"],
+      dynamicRoutes: ["/about", "/projects", "/achievements", "/contacts"],
       generateRobotsTxt: true,
       robots: [{ userAgent: "*", allow: "/" }],
     }),
