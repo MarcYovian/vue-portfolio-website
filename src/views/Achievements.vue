@@ -50,11 +50,14 @@
           :class="gridWrapperClass"
         >
           <div
-            v-for="achievement in filteredAchievements"
+            v-for="(achievement, index) in filteredAchievements"
             :key="achievement.id"
             class="achievement-card card"
             @click="openModal(achievement)"
+            @mousemove="handleMouseMove($event, index)"
+            @mouseleave="handleMouseLeave"
           >
+            <div class="achievement-spotlight" ref="spotlightRefs"></div>
             <div class="achievement-image">
               <img
                 :src="achievement.image_url"
@@ -161,24 +164,50 @@ const openModal = (achievement: any) => {
 const gridWrapperClass = computed(() => {
   const count = filteredAchievements.value.length;
   if (count === 1) {
-    return "layout-single-item"; // Class untuk 1 item
+    return "layout-single-item";
   }
   if (count === 2) {
-    return "layout-two-items"; // Class untuk 2 item
+    return "layout-two-items";
   }
-  return ""; // Default jika lebih dari 2
+  return "";
 });
+
+// --- Logic untuk Gradient Background Follows Cursor ---
+const spotlightRefs = ref<HTMLElement[]>([]);
+
+const handleMouseMove = (event: MouseEvent, index: number) => {
+  const card = event.currentTarget as HTMLElement;
+  if (!card) return;
+
+  const rect = card.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  // We need to find the correct spotlight element from the refs array.
+  // A simple way is to rely on Vue's rendering order, but let's find the specific one.
+  const spotlight = card.querySelector(".achievement-spotlight") as HTMLElement;
+  if (spotlight) {
+    spotlight.style.opacity = "1";
+    spotlight.style.backgroundImage = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 255, 255, 0.1), transparent 60%)`;
+  }
+};
+
+const handleMouseLeave = (event: MouseEvent) => {
+  const card = event.currentTarget as HTMLElement;
+  const spotlight = card.querySelector(".achievement-spotlight") as HTMLElement;
+  if (spotlight) {
+    spotlight.style.opacity = "0";
+  }
+};
 
 useHead({
   title: "Achievements & Certifications - MarcYovian Portfolio",
   meta: [
     {
       name: "description",
-      // Ringkasan dari header halaman yang sudah ada
       content:
         "Explore professional certifications and achievements by MarcYovian, showcasing a commitment to continuous learning and skill development in technology.",
     },
-    // --- Open Graph Tags ---
     {
       property: "og:title",
       content: "Achievements & Certifications | MarcYovian",
@@ -190,8 +219,6 @@ useHead({
     },
     {
       property: "og:image",
-      // Buat gambar banner khusus untuk halaman ini
-      // dan letakkan di `public/images/og-achievements.png`
       content: "https://marcyovian.my.id/images/og-achievements.png",
     },
     {
@@ -202,7 +229,6 @@ useHead({
       property: "og:type",
       content: "website",
     },
-    // --- Twitter Card Tags ---
     {
       name: "twitter:card",
       content: "summary_large_image",
@@ -221,7 +247,6 @@ useHead({
 .achievements {
   padding: 2rem 0 6rem;
 }
-
 .page-header {
   text-align: center;
   margin-bottom: 4rem;
@@ -229,32 +254,44 @@ useHead({
   margin-left: auto;
   margin-right: auto;
 }
-
 .page-header h1 {
   font-size: 3rem;
   margin-bottom: 1rem;
 }
-
 .page-header p {
   font-size: 1.1rem;
   color: var(--text-secondary);
   line-height: 1.6;
 }
-
 .achievements-grid {
   margin-top: 3rem;
 }
-
 .achievement-card {
   cursor: pointer;
   overflow: hidden;
   padding: 0;
   transition: all 0.3s ease;
+  position: relative; /* Diperlukan untuk spotlight */
+  z-index: 1;
 }
-
 .achievement-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 32px var(--shadow);
+}
+
+/* --- Spotlight CSS --- */
+.achievement-spotlight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.1),
+    transparent 60%
+  );
+  z-index: 2;
 }
 
 .achievement-image {
@@ -263,18 +300,15 @@ useHead({
   height: 200px;
   overflow: hidden;
 }
-
 .achievement-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
-
 .achievement-card:hover .achievement-image img {
   transform: scale(1.05);
 }
-
 .achievement-overlay {
   position: absolute;
   top: 0;
@@ -290,46 +324,41 @@ useHead({
   opacity: 0;
   transition: opacity 0.3s ease;
   color: white;
+  z-index: 3; /* Pastikan overlay di atas spotlight */
 }
-
 .achievement-card:hover .achievement-overlay {
   opacity: 1;
 }
-
 .achievement-overlay span {
   font-size: 0.9rem;
   font-weight: 500;
 }
-
 .achievement-content {
   padding: 1.5rem;
+  position: relative;
+  z-index: 3; /* Pastikan konten di atas spotlight */
 }
-
 .achievement-content h3 {
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
   line-height: 1.3;
 }
-
 .issuer {
   color: var(--accent);
   font-weight: 500;
   font-size: 0.9rem;
   margin-bottom: 0.25rem;
 }
-
 .date {
   color: var(--text-secondary);
   font-size: 0.85rem;
   margin-bottom: 1rem;
 }
-
 .achievement-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
 }
-
 .tag {
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
@@ -339,7 +368,6 @@ useHead({
   font-weight: 500;
   border: 1px solid var(--border);
 }
-
 .controls-section {
   display: flex;
   flex-direction: column;
@@ -422,40 +450,30 @@ useHead({
 .fade-leave-to {
   opacity: 0;
 }
-
 .achievements-grid.layout-single-item,
 .achievements-grid.layout-two-items {
-  /* Mencegah grid memenuhi seluruh lebar container */
   margin-left: auto;
   margin-right: auto;
 }
-
-/* Jika hanya ada 1 item */
 .achievements-grid.layout-single-item {
-  grid-template-columns: 1fr; /* Hanya buat 1 kolom */
-  max-width: 400px; /* Batasi lebar maksimum agar tidak terlalu besar */
+  grid-template-columns: 1fr;
+  max-width: 400px;
 }
-
-/* Jika hanya ada 2 item */
 .achievements-grid.layout-two-items {
-  grid-template-columns: repeat(2, 1fr); /* Buat 2 kolom */
-  max-width: 820px; /* Lebar maksimum untuk 2 kartu + gap */
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 820px;
 }
-
 @media (max-width: 768px) {
   .page-header h1 {
     font-size: 2.5rem;
   }
-
   .achievements-grid {
     grid-template-columns: 1fr;
   }
-
   .achievement-image {
     height: 160px;
   }
 }
-
 @media (max-width: 1024px) {
   .achievements-grid {
     grid-template-columns: repeat(2, 1fr);

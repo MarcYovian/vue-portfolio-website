@@ -46,12 +46,19 @@
           :class="gridWrapperClass"
         >
           <router-link
-            v-for="project in filteredProjects"
+            v-for="(project, index) in filteredProjects"
             :key="project.id"
             :to="{ name: 'ProjectDetail', params: { slug: project.slug } }"
             class="project-card-link"
           >
-            <div class="project-card card fade-in-up">
+            <div
+              class="project-card card fade-in-up"
+              @mousemove="handleMouseMove($event, index)"
+              @mouseleave="handleMouseLeave(index)"
+              :data-index="index"
+            >
+              <div class="project-spotlight" ref="spotlightRefs"></div>
+
               <div class="project-image">
                 <img
                   :src="project.image_url"
@@ -66,6 +73,7 @@
                       target="_blank"
                       class="project-link"
                       aria-label="View live demo"
+                      @click.stop
                     >
                       <ExternalLink :size="20" />
                     </a>
@@ -75,6 +83,7 @@
                       target="_blank"
                       class="project-link"
                       aria-label="View source code"
+                      @click.stop
                     >
                       <Github :size="20" />
                     </a>
@@ -102,6 +111,7 @@
                     :href="project.demo_url"
                     target="_blank"
                     class="btn btn-primary btn-small"
+                    @click.stop
                   >
                     <ExternalLink :size="16" />
                     Live Demo
@@ -111,6 +121,7 @@
                     :href="project.github_url"
                     target="_blank"
                     class="btn btn-secondary btn-small"
+                    @click.stop
                   >
                     <Github :size="16" />
                     Source Code
@@ -212,6 +223,32 @@ const gridWrapperClass = computed(() => {
   return "";
 });
 
+// --- Logic untuk Gradient Background Follows Cursor ---
+const spotlightRefs = ref<HTMLElement[]>([]);
+
+const handleMouseMove = (event: MouseEvent, index: number) => {
+  const card = event.currentTarget as HTMLElement;
+  if (!card) return;
+
+  const rect = card.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  const spotlight = spotlightRefs.value[index];
+  if (spotlight) {
+    spotlight.style.opacity = "1";
+    spotlight.style.backgroundImage = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 255, 255, 0.1), transparent 70%)`;
+  }
+};
+
+const handleMouseLeave = (index: number) => {
+  const spotlight = spotlightRefs.value[index];
+  if (spotlight) {
+    spotlight.style.opacity = "0";
+  }
+};
+
+// --- SEO Meta Tags ---
 useHead({
   title: "My Projects - MarcYovian Portfolio",
   meta: [
@@ -308,27 +345,47 @@ useHead({
 }
 .projects-grid {
   margin-top: 3rem;
-  /* Tambahkan ini untuk memastikan semua item dalam grid setinggi item tertinggi */
   align-items: stretch;
 }
 .project-card-link {
   text-decoration: none;
   color: inherit;
-  display: flex; /* Mengubah display agar link mengisi ruang */
+  display: flex;
 }
 .project-card {
   overflow: hidden;
   padding: 0;
   display: flex;
   flex-direction: column;
-  width: 100%; /* Memastikan kartu mengisi seluruh ruang link */
+  width: 100%;
+  position: relative; /* Penting untuk posisi spotlight */
+  z-index: 1; /* Agar spotlight tidak keluar dari card */
 }
+
+/* --- Spotlight CSS --- */
+.project-spotlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none; /* Penting agar tidak menghalangi interaksi lain */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.1),
+    transparent 70%
+  );
+  z-index: 2; /* Di atas konten kartu */
+}
+
 .project-image {
   position: relative;
   width: 100%;
   height: 240px;
   overflow: hidden;
-  flex-shrink: 0; /* Mencegah gambar menyusut */
+  flex-shrink: 0;
 }
 .project-image img {
   width: 100%;
@@ -351,6 +408,7 @@ useHead({
   justify-content: center;
   opacity: 0;
   transition: opacity 0.3s ease;
+  z-index: 3; /* Di atas spotlight */
 }
 .project-card:hover .project-overlay {
   opacity: 1;
@@ -376,9 +434,10 @@ useHead({
 }
 .project-content {
   padding: 2rem;
-  flex: 1; /* Konten akan mengisi ruang yang tersisa */
+  flex: 1;
   display: flex;
   flex-direction: column;
+  z-index: 3; /* Di atas spotlight */
 }
 .project-content h3 {
   margin-bottom: 1rem;
@@ -388,7 +447,7 @@ useHead({
   color: var(--text-secondary);
   margin-bottom: 1.5rem;
   line-height: 1.5;
-  flex-grow: 1; /* Deskripsi akan tumbuh mengisi ruang kosong */
+  flex-grow: 1;
 }
 .project-tech {
   display: flex;
@@ -409,7 +468,7 @@ useHead({
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-top: auto; /* Mendorong tombol ke bawah jika ada ruang */
+  margin-top: auto;
 }
 .btn-small {
   padding: 0.5rem 1rem;
@@ -453,7 +512,7 @@ useHead({
   border-radius: 25px;
 }
 .skeleton-card {
-  height: 480px; /* Sesuaikan dengan tinggi kartu proyek Anda */
+  height: 480px;
 }
 .fade-enter-active,
 .fade-leave-active {
