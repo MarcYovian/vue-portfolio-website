@@ -55,7 +55,7 @@
             class="achievement-card card"
             @click="openModal(achievement)"
             @mousemove="handleMouseMove($event, index)"
-            @mouseleave="handleMouseLeave"
+            @mouseleave="handleMouseLeave(index)"
           >
             <div class="achievement-spotlight" ref="spotlightRefs"></div>
             <div class="achievement-image">
@@ -172,29 +172,25 @@ const gridWrapperClass = computed(() => {
   return "";
 });
 
-// --- Logic untuk Gradient Background Follows Cursor ---
+// --- Logic for Gradient Background Follows Cursor ---
 const spotlightRefs = ref<HTMLElement[]>([]);
 
 const handleMouseMove = (event: MouseEvent, index: number) => {
   const card = event.currentTarget as HTMLElement;
-  if (!card) return;
+  const spotlight = spotlightRefs.value[index];
+
+  if (!card || !spotlight) return;
 
   const rect = card.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
 
-  // We need to find the correct spotlight element from the refs array.
-  // A simple way is to rely on Vue's rendering order, but let's find the specific one.
-  const spotlight = card.querySelector(".achievement-spotlight") as HTMLElement;
-  if (spotlight) {
-    spotlight.style.opacity = "1";
-    spotlight.style.backgroundImage = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 255, 255, 0.1), transparent 60%)`;
-  }
+  spotlight.style.opacity = "1";
+  spotlight.style.backgroundImage = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 255, 255, 0.1), transparent 60%)`;
 };
 
-const handleMouseLeave = (event: MouseEvent) => {
-  const card = event.currentTarget as HTMLElement;
-  const spotlight = card.querySelector(".achievement-spotlight") as HTMLElement;
+const handleMouseLeave = (index: number) => {
+  const spotlight = spotlightRefs.value[index];
   if (spotlight) {
     spotlight.style.opacity = "0";
   }
