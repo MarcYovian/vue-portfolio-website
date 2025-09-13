@@ -27,7 +27,6 @@
       </section>
 
       <div v-else>
-        <!-- Filter Tabs -->
         <div class="filters">
           <button
             v-for="category in categories"
@@ -40,86 +39,87 @@
           </button>
         </div>
 
-        <!-- Projects Grid -->
         <transition-group
           name="fade"
           tag="div"
           class="projects-grid grid grid-2"
           :class="gridWrapperClass"
         >
-          <div
+          <router-link
             v-for="project in filteredProjects"
             :key="project.id"
-            class="project-card card fade-in-up"
+            :to="{ name: 'ProjectDetail', params: { slug: project.slug } }"
+            class="project-card-link"
           >
-            <div class="project-image">
-              <img
-                :src="project.image_url"
-                :alt="project.title"
-                loading="lazy"
-              />
-              <div class="project-overlay">
-                <div class="project-links">
+            <div class="project-card card fade-in-up">
+              <div class="project-image">
+                <img
+                  :src="project.image_url"
+                  :alt="project.title"
+                  loading="lazy"
+                />
+                <div class="project-overlay">
+                  <div class="project-links">
+                    <a
+                      v-if="project.demo_url"
+                      :href="project.demo_url"
+                      target="_blank"
+                      class="project-link"
+                      aria-label="View live demo"
+                    >
+                      <ExternalLink :size="20" />
+                    </a>
+                    <a
+                      v-if="project.github_url"
+                      :href="project.github_url"
+                      target="_blank"
+                      class="project-link"
+                      aria-label="View source code"
+                    >
+                      <Github :size="20" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="project-content">
+                <h3>{{ project.title }}</h3>
+                <p class="project-description">{{ project.description }}</p>
+
+                <div class="project-tech">
+                  <span
+                    v-for="tech in project.technologies"
+                    :key="tech"
+                    class="tech-tag"
+                  >
+                    {{ tech }}
+                  </span>
+                </div>
+
+                <div class="project-actions">
                   <a
                     v-if="project.demo_url"
                     :href="project.demo_url"
                     target="_blank"
-                    class="project-link"
-                    aria-label="View live demo"
+                    class="btn btn-primary btn-small"
                   >
-                    <ExternalLink :size="20" />
+                    <ExternalLink :size="16" />
+                    Live Demo
                   </a>
                   <a
                     v-if="project.github_url"
                     :href="project.github_url"
                     target="_blank"
-                    class="project-link"
-                    aria-label="View source code"
+                    class="btn btn-secondary btn-small"
                   >
-                    <Github :size="20" />
+                    <Github :size="16" />
+                    Source Code
                   </a>
                 </div>
               </div>
             </div>
-
-            <div class="project-content">
-              <h3>{{ project.title }}</h3>
-              <p class="project-description">{{ project.description }}</p>
-
-              <div class="project-tech">
-                <span
-                  v-for="tech in project.technologies"
-                  :key="tech"
-                  class="tech-tag"
-                >
-                  {{ tech }}
-                </span>
-              </div>
-
-              <div class="project-actions">
-                <a
-                  v-if="project.demo_url"
-                  :href="project.demo_url"
-                  target="_blank"
-                  class="btn btn-primary btn-small"
-                >
-                  <ExternalLink :size="16" />
-                  Live Demo
-                </a>
-                <a
-                  v-if="project.github_url"
-                  :href="project.github_url"
-                  target="_blank"
-                  class="btn btn-secondary btn-small"
-                >
-                  <Github :size="16" />
-                  Source Code
-                </a>
-              </div>
-            </div>
-          </div>
+          </router-link>
         </transition-group>
-        <!-- Empty State -->
         <div
           v-if="filteredProjects.length === 0 && !isLoading"
           class="empty-state"
@@ -136,6 +136,7 @@ import { useHead } from "@vueuse/head";
 import axios from "axios";
 import { ExternalLink, Github } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
+import { RouterLink } from "vue-router";
 
 interface Category {
   id: string;
@@ -145,6 +146,7 @@ interface Category {
 interface Project {
   id: number;
   title: string;
+  slug: string;
   description: string;
   image_url: string;
   demo_url: string;
@@ -194,7 +196,6 @@ const filteredProjects = computed(() => {
   if (activeFilter.value.name === "All") {
     return projects.value;
   }
-  // Diasumsikan setiap project memiliki properti `category_name`
   return projects.value.filter(
     (project: Project) => project.category === activeFilter.value.name
   );
@@ -262,7 +263,6 @@ useHead({
 .projects {
   padding: 2rem 0 6rem;
 }
-
 .page-header {
   text-align: center;
   margin-bottom: 4rem;
@@ -270,18 +270,15 @@ useHead({
   margin-left: auto;
   margin-right: auto;
 }
-
 .page-header h1 {
   font-size: 3rem;
   margin-bottom: 1rem;
 }
-
 .page-header p {
   font-size: 1.1rem;
   color: var(--text-secondary);
   line-height: 1.6;
 }
-
 .filters {
   display: flex;
   justify-content: center;
@@ -289,7 +286,6 @@ useHead({
   margin-bottom: 3rem;
   flex-wrap: wrap;
 }
-
 .filter-btn {
   padding: 0.75rem 1.5rem;
   border: 2px solid var(--border);
@@ -301,47 +297,48 @@ useHead({
   transition: all 0.2s ease;
   font-family: var(--font-ui);
 }
-
 .filter-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
-
 .filter-btn.active {
   background-color: var(--accent);
   border-color: var(--accent);
   color: #000;
 }
-
 .projects-grid {
   margin-top: 3rem;
+  /* Tambahkan ini untuk memastikan semua item dalam grid setinggi item tertinggi */
+  align-items: stretch;
 }
-
+.project-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex; /* Mengubah display agar link mengisi ruang */
+}
 .project-card {
   overflow: hidden;
   padding: 0;
   display: flex;
   flex-direction: column;
+  width: 100%; /* Memastikan kartu mengisi seluruh ruang link */
 }
-
 .project-image {
   position: relative;
   width: 100%;
   height: 240px;
   overflow: hidden;
+  flex-shrink: 0; /* Mencegah gambar menyusut */
 }
-
 .project-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
-
 .project-card:hover .project-image img {
   transform: scale(1.05);
 }
-
 .project-overlay {
   position: absolute;
   top: 0;
@@ -355,16 +352,13 @@ useHead({
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-
 .project-card:hover .project-overlay {
   opacity: 1;
 }
-
 .project-links {
   display: flex;
   gap: 1rem;
 }
-
 .project-link {
   display: flex;
   align-items: center;
@@ -376,38 +370,32 @@ useHead({
   border-radius: 50%;
   transition: all 0.2s ease;
 }
-
 .project-link:hover {
   background-color: var(--accent-hover);
   transform: scale(1.1);
 }
-
 .project-content {
   padding: 2rem;
-  flex: 1;
+  flex: 1; /* Konten akan mengisi ruang yang tersisa */
   display: flex;
   flex-direction: column;
 }
-
 .project-content h3 {
   margin-bottom: 1rem;
   font-size: 1.25rem;
 }
-
 .project-description {
   color: var(--text-secondary);
   margin-bottom: 1.5rem;
   line-height: 1.5;
-  flex: 1;
+  flex-grow: 1; /* Deskripsi akan tumbuh mengisi ruang kosong */
 }
-
 .project-tech {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
-
 .tech-tag {
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
@@ -417,25 +405,22 @@ useHead({
   font-weight: 500;
   border: 1px solid var(--border);
 }
-
 .project-actions {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  margin-top: auto; /* Mendorong tombol ke bawah jika ada ruang */
 }
-
 .btn-small {
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
 }
-
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
   color: var(--text-secondary);
   font-size: 1.1rem;
 }
-
 .error-state {
   text-align: center;
   padding: 4rem 0;
@@ -452,31 +437,24 @@ useHead({
   color: var(--text-secondary);
   margin-bottom: 2rem;
 }
-
-/* Gaya untuk Skeleton Loader */
 @keyframes pulse {
   50% {
     opacity: 0.5;
   }
 }
-
 .skeleton {
   background-color: var(--bg-tertiary);
   border-radius: 16px;
   animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
-
 .skeleton-filter {
   height: 48px;
   width: 120px;
   border-radius: 25px;
 }
-
 .skeleton-card {
-  height: 450px; /* Sesuaikan dengan tinggi kartu proyek Anda */
+  height: 480px; /* Sesuaikan dengan tinggi kartu proyek Anda */
 }
-
-/* Gaya untuk Transisi Fade */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s ease;
@@ -485,61 +463,44 @@ useHead({
 .fade-leave-to {
   opacity: 0;
 }
-
 .projects-grid.layout-single-item,
 .projects-grid.layout-two-items {
   margin-left: auto;
   margin-right: auto;
 }
-
 .projects-grid.layout-single-item {
-  grid-template-columns: 1fr; /* Hanya buat 1 kolom */
-  max-width: 550px; /* Batasi lebar maksimum kartu proyek */
+  grid-template-columns: 1fr;
+  max-width: 550px;
 }
-
-/* Jika hanya ada 2 item, batasi lebar containernya */
 .projects-grid.layout-two-items {
-  max-width: 1124px; /* Sesuaikan dengan lebar 2 kartu + gap */
+  max-width: 1124px;
 }
-
 @media (max-width: 768px) {
   .page-header h1 {
     font-size: 2.5rem;
   }
-
   .filters {
     gap: 0.5rem;
   }
-
   .filter-btn {
     padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
   }
-
   .projects-grid {
     grid-template-columns: 1fr;
   }
-
   .project-image {
     height: 200px;
   }
-
   .project-content {
     padding: 1.5rem;
   }
-
   .project-actions {
     flex-direction: column;
   }
-
-  .projects-grid {
-    grid-template-columns: 1fr;
-  }
-
-  /* Pastikan class layout kita tidak mengganggu di mobile */
   .projects-grid.layout-single-item,
   .projects-grid.layout-two-items {
-    max-width: 550px; /* Batas lebar tetap berlaku */
+    max-width: 550px;
   }
 }
 </style>

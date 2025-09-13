@@ -3,6 +3,7 @@ import About from "../views/About.vue";
 import Achievements from "../views/Achievements.vue";
 import Contacts from "../views/Contacts.vue";
 import Home from "../views/Home.vue";
+import ProjectDetail from "../views/ProjectDetail.vue";
 import Projects from "../views/Projects.vue";
 
 const routes = [
@@ -25,6 +26,11 @@ const routes = [
     path: "/projects",
     name: "Projects",
     component: Projects,
+  },
+  {
+    path: "/project/:slug",
+    name: "ProjectDetail",
+    component: ProjectDetail,
   },
   {
     path: "/contacts",

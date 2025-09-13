@@ -45,6 +45,6 @@ provide("modal", { openModal, closeModal });
 
 main {
   flex: 1;
-  padding-top: 80px; /* Account for sticky navbar */
+  padding-top: 70px; /* Account for sticky navbar */
 }
 </style>
